@@ -11,11 +11,10 @@ module CF::UAA
     topic "CURL"
 
     define_option :request, "-X", "--request <method>", "request method type, defaults to GET"
-    define_option :data, "-d", "--data <data>", "data included in request body"
+    define_option :data, "--data <data>", "data included in request body"
     define_option :header, "-H", "--header <header>", "header to be included in the request"
-    define_option :insecure, "-k", "--insecure", "makes request without verifying SSL certificates"
 
-    desc "curl [path]", "CURL to a UAA endpoint", :request, :data, :header, :insecure do |path|
+    desc "curl [path]", "CURL to a UAA endpoint", :request, :data, :header do |path|
       return say_command_help(["curl"]) unless path
 
       uri = parse_uri(path)
@@ -47,11 +46,9 @@ module CF::UAA
 
     def make_request(uri, options)
       http = Net::HTTP.new(uri.host, uri.port)
-      if uri.scheme == "https"
+      if uri.is_a?(URI::HTTPS)
         http.use_ssl = true
-        if options[:insecure]
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       request_class = Net::HTTP.const_get("#{options[:request][0]}#{options[:request][1..-1].downcase}")
       req = request_class.new(uri.request_uri)

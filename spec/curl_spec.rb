@@ -34,7 +34,8 @@ module CF::UAA
 
       Cli.output.string.should include "curl [path]"
       Cli.output.string.should include "-X | --request <method>"
-      Cli.output.string.should include "-d | --data <data>"
+      Cli.output.string.should include "--data <data>"
+      Cli.output.string.should include "-H | --header <header>"
     end
 
     it "hits the URL on the UAA target" do
@@ -49,7 +50,7 @@ module CF::UAA
     end
 
     it "displays the correct response text when we include a body in the request" do
-      Cli.run("curl -X PUT -d '{\"fake\": true}' -H 'Accept: application/json' /another-fake-endpoint")
+      Cli.run("curl -X PUT --data '{\"fake\": true}' -H 'Accept: application/json' /another-fake-endpoint")
 
       Cli.output.string.should include "PUT #{@target}/another-fake-endpoint"
       Cli.output.string.should include "REQUEST BODY: \"{\"fake\": true}\""
@@ -85,7 +86,7 @@ module CF::UAA
     end
 
     it "makes insecure requests with the -k flag" do
-      Cli.run("curl https://example.com/ -k")
+      Cli.run("curl https://example.com/")
 
       Cli.output.string.should_not include "ECONNRESET"
       Cli.output.string.should include "200 OK"
