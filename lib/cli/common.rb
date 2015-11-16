@@ -67,9 +67,15 @@ class CommonCli < Topic
   end
 
   def scim_request
+    headers = {}
+    Array(opts[:header]).each do |h|
+        key, value = h.split(":")
+        headers[key] = value
+    end
     yield Scim.new(Config.target, auth_header, {
       skip_ssl_validation: Config.target_value(:skip_ssl_validation),
-      ssl_ca_file: Config.target_value(:ca_cert) })
+      ssl_ca_file: Config.target_value(:ca_cert),
+      default_headers: headers})
   rescue Exception => e
     complain e
   end
@@ -124,6 +130,7 @@ class MiscCli < CommonCli
   define_option :help, "--[no-]help", "-h", "display helpful information"
   define_option :version, "--[no-]version", "-v", "show version"
   define_option :config, "--config [string|file]", "file to get/save configuration information or yaml string"
+  define_option :header, "-H", "--header <header>", "header to be included in the request"
 
   desc "help [topic|command...]", "Display summary or details of command or topic" do |*args|
     # handle hidden command, output commands in form for bash completion
@@ -153,6 +160,7 @@ class MiscCli < CommonCli
   define_option :ca_cert, "--ca-cert [file]", "use the given CA certificate to validate the target's SSL certificate"
   define_option :skip_ssl_validation, "--skip-ssl-validation", "do not attempt to validate ssl certificate"
   define_option :force, "--[no-]force", "-f", "set even if target does not respond"
+
   desc "target [uaa_url]", "Display current or set new target", :force, :ca_cert, :skip_ssl_validation do |uaa_url|
     msg, info = nil, {}
     if uaa_url
